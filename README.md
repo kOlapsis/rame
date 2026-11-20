@@ -3,6 +3,13 @@
 Balade en 3D pilotée par un rameur Bluetooth (protocole FTMS, testé pour Merach R28).
 Tout est servi localement (Three.js 0.170 inclus), aucune ressource externe.
 
+## Dans l'appli
+
+- **Décors** : six ambiances (lac alpin, rivière d'automne sous une pluie fine, lagon, fjord, canal de Provence, nuit d'été) avec nuages, roselières, nénuphars, prés fleuris, villages, vaches, feuilles qui tombent. En mode « Balade », le décor change tous les 1,5 km.
+- **Vue** (bouton « Vue ») : *Poursuite* (derrière la yole), *Barreur* (assis à la poupe, face au rameur) ou *Rameur* (dos à la marche, comme en vrai).
+- **Rameur animé** : attaque, propulsion jambes → dos → bras, dégagé, retour sur la coulisse, calés sur ta cadence.
+- **Son** : tout est synthétisé dans le navigateur (aucun fichier audio).
+
 ## Publication
 
 GitHub Actions (`.github/workflows/docker.yml`) construit l'image amd64 + arm64 et la pousse sur ghcr.io :

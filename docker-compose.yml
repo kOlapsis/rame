@@ -1,0 +1,17 @@
+services:
+  balade:
+    # Image publiée par GitHub Actions ; remplace kolapsis par ton compte/organisation GitHub
+    image: ghcr.io/kolapsis/balade-rame:latest
+    container_name: balade-rame
+    restart: unless-stopped
+    networks: [traefik]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.balade.rule=Host(`rame.example.com`)
+      - traefik.http.routers.balade.entrypoints=websecure
+      - traefik.http.routers.balade.tls.certresolver=letsencrypt
+      - traefik.http.services.balade.loadbalancer.server.port=80
+
+networks:
+  traefik:
+    external: true

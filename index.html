@@ -372,7 +372,7 @@ function repack(){for(const t in TYPES){const P=TYPES[t].parts;let n=0;
   for(const c of chunks.values())for(const e of c.Pl[t]){for(const p of P){p.mesh.setMatrixAt(n,e.m);p.mesh.setColorAt(n,roleColor(p[1],e.r))}n++}
   for(const p of P){p.mesh.count=n;p.mesh.visible=n>0;p.mesh.instanceMatrix.needsUpdate=true;p.mesh.instanceColor.needsUpdate=true}}}
 function dropChunk(ci){const c=chunks.get(ci);for(const o of c.objs){scene.remove(o);o.userData.dispose?.();const i=anims.findIndex(a=>a.o===o);if(i>=0)anims.splice(i,1)}terr[c.slot].visible=false;chunks.delete(ci)}
-function updateChunks(all){const c0=Math.floor((st.s-(view===2?CH*5.4:60))/CH),c1=c0+NSLOT-1;let ch=false;
+function updateChunks(all){const c0=Math.floor((st.s-(view===3?CH*5.4:60))/CH),c1=c0+NSLOT-1;let ch=false;
   for(const ci of[...chunks.keys()])if(ci<c0||ci>c1){dropChunk(ci);ch=true}
   for(let ci=c0;ci<=c1;ci++)if(!chunks.has(ci)){buildChunk(ci);ch=true;if(!all)break}
   if(ch)repack()}
@@ -482,8 +482,9 @@ const oars=[-1,1].map(sd=>{const grp=new THREE.Group(),pin=new THREE.Vector3(sd*
 const skin=flat('#dba27c'),shirt=flat('#ece7da'),shorts=flat('#26364c'),capMat=flat('#d8574a');
 const rw={torso:bAdd(G(new THREE.CylinderGeometry(.2,.145,.52,8),{s:[1,1,.62],t:[0,.27,0]}),shirt),hips:bAdd(new THREE.BoxGeometry(.33,.16,.26),shorts),neck:bAdd(cylU,skin),head:new THREE.Group(),arms:[],legs:[]};
 rw.head.add(new THREE.Mesh(new THREE.IcosahedronGeometry(.105,1),skin),new THREE.Mesh(G(new THREE.SphereGeometry(.112,10,5,0,6.283,0,1.45),{t:[0,.012,0]}),capMat),new THREE.Mesh(G(new THREE.BoxGeometry(.15,.012,.1),{t:[0,.035,.14]}),capMat),new THREE.Mesh(G(new THREE.BoxGeometry(.17,.035,.05),{t:[0,-.012,.085]}),dark));boat.add(rw.head);
+const shoes=[];
 for(const sd of[-1,1]){rw.arms.push({ua:bAdd(cylU,shirt),fa:bAdd(cylU,skin),hand:bAdd(new THREE.IcosahedronGeometry(.045,0),skin)});
-  rw.legs.push({sd,th:bAdd(cylU,shorts),sh:bAdd(cylU,skin)});bAdd(new THREE.BoxGeometry(.1,.08,.25),dark,sd*.1,.2,.63).rotation.x=-.8}
+  rw.legs.push({sd,th:bAdd(cylU,shorts),sh:bAdd(cylU,skin)});const f=bAdd(new THREE.BoxGeometry(.1,.08,.25),dark,sd*.1,.2,.63);f.rotation.x=-.8;shoes.push(f)}
 const body=[rw.torso,rw.hips,rw.neck,rw.head,...rw.arms.flatMap(a=>[a.ua,a.fa,a.hand]),...rw.legs.flatMap(l=>[l.th,l.sh])];
 const ikD=new THREE.Vector3(),ikP=new THREE.Vector3();
 function ik(a,c,l1,l2,pole,out){ikD.subVectors(c,a);const L=clamp(ikD.length(),.02,l1+l2-.002);ikD.normalize();
@@ -513,15 +514,16 @@ function updateBoat(dt){
   for(const g of rw.legs){jA.set(g.sd*.1,.2,hz+.06);jC.set(g.sd*.1,.2,.6);ik(jA,jC,.44,.45,pole.set(g.sd*.3,1,0),jB);limb(g.th,jA,jB,.075);limb(g.sh,jB,jC,.055)}
 }
 /* ================= points de vue ================= */
-const VIEWS=['Poursuite','Barreur','Rameur'];let view=0;
+const VIEWS=['À bord','Poursuite','Barreur','Rameur'];let view=0;
 try{const v=+localStorage.getItem('balade-vue');if(v>=0&&v<VIEWS.length)view=v}catch(e){}
-const fwd=()=>view===2?-1:1;
+const fwd=()=>view===3?-1:1;
 function placeCam(){const s=st.s;
-  if(view===0){const b=s-(camera.aspect<1?8.5:5.8);camera.position.set(center(b),2.15,-b);look.set(center(s+13),.5,-(s+13))}
-  else if(view===1){camera.position.copy(boat.localToWorld(v3.set(0,.92,2.5)));look.set(center(s+24),.6,-(s+24))}
+  if(view===0){boat.localToWorld(camera.position.set(0,1,1.6));look.set(center(s+20),.1,-(s+20))}                       // vue subjective : assis à l'arrière, face à la proue
+  else if(view===1){const b=s-(camera.aspect<1?8.5:5.8);camera.position.set(center(b),2.15,-b);look.set(center(s+13),.5,-(s+13))}
+  else if(view===2){camera.position.copy(boat.localToWorld(v3.set(0,.92,2.5)));look.set(center(s+24),.6,-(s+24))}
   else{boat.localToWorld(camera.position.copy(rw.head.position).add(v3.set(0,.1,-.2)));look.set(center(s-3.3),-.4,-(s-3.3))} // au-dessus de l'épaule : on voit ses mains et ses genoux
   camera.lookAt(look)}
-function setView(v){view=v;resize();for(const o of[rw.head,rw.neck,rw.torso])o.visible=v!==2;try{localStorage.setItem('balade-vue',v)}catch(e){}}
+function setView(v){view=v;resize();for(const o of body)o.visible=v!==0;for(const o of[rw.head,rw.neck,rw.torso])o.visible=v===1||v===2;seat.visible=v!==0;for(const o of shoes)o.visible=v!==0;try{localStorage.setItem('balade-vue',v)}catch(e){}}
 
 /* ================= son ================= */
 // Tout est synthétisé : pas de fichier audio. Bus oars + bus ambiance, réverb par lieu, compresseur final.
@@ -647,7 +649,7 @@ const look=new THREE.Vector3();
 const bladeAt=o=>o.grp.localToWorld(wp.set(0,1.8,0));
 function onCatch(){st.lastCatch=st.t;sCatch(st.vAvg/3.5);for(const o of oars){bladeAt(o);ripple(wp.x,wp.z,.5,2.4,.3)}}
 function onRelease(){sRelease();for(const o of oars){bladeAt(o);ripple(wp.x,wp.z,.4,3,.28);ripple(wp.x,wp.z,.2,2,.28)}}
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<h||view===2?74:60;camera.updateProjectionMatrix()}
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<h||view===3?74:view===0?64:60;camera.updateProjectionMatrix()}
 let prev=performance.now(),hudT=0;
 function frame(now){
   const dt=Math.min(.1,(now-prev)/1000);prev=now;st.t+=dt;
@@ -679,7 +681,7 @@ function frame(now){
       rp[k]=x;rp[k+1]=y;rp[k+2]=z;rp[k+3]=x+.02;rp[k+4]=y+.3;rp[k+5]=z}rainGeo.attributes.position.needsUpdate=true;
     st.rainAcc=(st.rainAcc||0)+dt*26;while(st.rainAcc>1){st.rainAcc--;const a=Math.random()*6.283,d=2+Math.random()*26;ripple(boat.position.x+Math.cos(a)*d,boat.position.z+Math.sin(a)*d-fwd()*8,.11+Math.random()*.07,.7+Math.random()*.4,.3)}}
   if(leaves.visible){for(let i=0;i<LN;i++){const k=i*4,ph=lseed[k+3];lp[i*3]=wrap(lseed[k]+Math.sin(st.t*.8+ph)*1.2,cp.x,LB[0]);lp[i*3+1]=((lseed[k+1]-st.t*(.7+.3*Math.sin(ph)))%LB[1]+LB[1])%LB[1];lp[i*3+2]=wrap(lseed[k+2]+Math.cos(st.t*.6+ph)*1.2,cp.z,LB[2])}leafGeo.attributes.position.needsUpdate=true}
-  if(flies.visible){for(let i=0;i<FN;i++){const[a,ph,sd,b]=fseed[i];const ss=st.s-(view===2?160:10)+((a*170-st.s)%170+170)%170;
+  if(flies.visible){for(let i=0;i<FN;i++){const[a,ph,sd,b]=fseed[i];const ss=st.s-(view===3?160:10)+((a*170-st.s)%170+170)%170;
       const x=center(ss)+sd*(half(ss)+2+b*16)+Math.sin(st.t*.7+ph)*1.2,y=.6+Math.sin(st.t*.5+ph*2)*.5+b*1.5;fp[i*3]=x;fp[i*3+1]=y;fp[i*3+2]=-ss}
     flyGeo.attributes.position.needsUpdate=true;flies.material.opacity=.65+.35*Math.sin(st.t*3)}
   // poisson qui saute

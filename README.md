@@ -6,7 +6,7 @@ Tout est servi localement (Three.js 0.170 inclus), aucune ressource externe.
 ## Dans l'appli
 
 - **Décors** : six ambiances (lac alpin, rivière d'automne sous une pluie fine, lagon, fjord, canal de Provence, nuit d'été) avec nuages, roselières, nénuphars, prés fleuris, villages, vaches, feuilles qui tombent. En mode « Balade », le décor change tous les 1,5 km.
-- **Vue** (bouton « Vue ») : *Poursuite* (derrière la yole), *Barreur* (assis à la poupe, face au rameur) ou *Rameur* (dos à la marche, comme en vrai).
+- **Vue** (bouton « Vue ») : *À bord* (vue subjective, face à la proue, par défaut), *Poursuite* (derrière la yole), *Barreur* (assis à la poupe, face au rameur) ou *Rameur* (dos à la marche, comme en vrai).
 - **Rameur animé** : attaque, propulsion jambes → dos → bras, dégagé, retour sur la coulisse, calés sur ta cadence.
 - **Son** : tout est synthétisé dans le navigateur (aucun fichier audio).
 

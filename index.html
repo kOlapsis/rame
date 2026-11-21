@@ -36,8 +36,20 @@ button.on{background:var(--acc);color:#06221b;border-color:var(--acc)}
 #wk{font-size:13px;padding:0 12px;display:none}#wk.ok{color:var(--acc)}#wk:not(.ok){background:#b3412f;border-color:#b3412f}
 .toast{position:fixed;left:50%;top:36%;transform:translate(-50%,-50%);font-size:clamp(28px,6vw,52px);font-weight:600;text-shadow:0 2px 24px rgba(0,0,0,.55);opacity:0;transition:opacity .8s;pointer-events:none;text-align:center;white-space:nowrap}
 .toast.show{opacity:1}
-.intro{position:fixed;inset:0;display:grid;place-items:center;padding:20px;background:linear-gradient(rgba(6,14,22,.25),rgba(6,14,22,.7))}
-.card{max-width:440px;width:100%;background:rgba(10,20,28,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:28px 24px;display:grid;gap:14px}
+[hidden]{display:none!important}
+.brk{flex-basis:100%;height:0}
+.pg{width:min(360px,100%);background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:14px;padding:8px 12px;font-size:14px}
+.pgTop{display:flex;justify-content:space-between;gap:8px;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.pgBar{height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:6px 0 4px}.pgBar i{display:block;height:100%;width:0;background:var(--acc);border-radius:2px}
+.pg small{opacity:.7}
+#pgT.lo,#pgT.hi,.st.lo b,.st.hi b{color:#ffc27a}.st.ok b{color:var(--acc)}
+.intro{position:fixed;inset:0;display:flex;overflow-y:auto;padding:20px;background:linear-gradient(rgba(6,14,22,.25),rgba(6,14,22,.7))}
+.card h2{margin:0;font-size:24px}
+.card label{display:grid;gap:4px;font-size:14px}
+.card input,.card select{font:inherit;font-size:16px;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:12px;min-height:44px;padding:0 12px;width:100%}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.row>label{flex:none}
+#sum{font-size:14px;opacity:.85;display:grid;gap:2px}
+.card{margin:auto;max-width:440px;width:100%;background:rgba(10,20,28,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:28px 24px;display:grid;gap:14px}
 .card h1{margin:0;font-size:clamp(32px,7vw,44px);line-height:1.05;text-wrap:balance}
 .card p{margin:0;opacity:.85}
 .card small{opacity:.65;font-size:13px}
@@ -58,8 +70,15 @@ button.on{background:var(--acc);color:#06221b;border-color:var(--acc)}
   <div class="st"><b id="hSpm">0</b><span>coups/min</span></div>
   <div class="st"><b id="hPace">--:--</b><span>/500 m</span></div>
   <div class="st hide" id="sPow"><b id="hPow">0</b><span>watts</span></div>
-  <div class="st hide" id="sKcal"><b id="hKcal">0</b><span>kcal</span></div>
+  <div class="st" id="sKcal"><b id="hKcal">0</b><span>kcal</span></div>
   <div class="st hide" id="sHr"><b id="hHr">0</b><span>bpm</span></div>
+  <div class="brk"></div>
+  <div class="pg" id="pg" hidden>
+    <div class="pgTop"><span id="pgN"></span><span id="pgL"></span></div>
+    <div id="pgT"></div>
+    <div class="pgBar"><i id="pgBar"></i></div>
+    <small id="pgNx"></small>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -68,6 +87,7 @@ button.on{background:var(--acc);color:#06221b;border-color:var(--acc)}
   <div id="status"><span class="dot" id="dot"></span><span id="stTxt">Non connecté</span></div>
   <div id="demoBox">Cadence <input type="range" id="demoSpm" min="0" max="34" value="22"><b id="demoVal">22</b></div>
   <button id="wk">Veille non bloquée</button>
+  <select id="prog" aria-label="Séance"><option value="-1">Séance libre</option></select>
   <select id="scene" aria-label="Décor"></select>
   <button id="tour" class="on" title="Change de décor tous les 1,5 km">Balade</button>
   <button id="snd" class="on" aria-label="Son">Son</button>
@@ -78,12 +98,33 @@ button.on{background:var(--acc);color:#06221b;border-color:var(--acc)}
   <div class="card">
     <h1>Balade à la rame</h1>
     <p>Branche ton rameur en Bluetooth : la barque avance au rythme de tes coups de rame.</p>
+    <div class="row"><select id="who" aria-label="Profil"></select><button id="whoEdit" hidden>Modifier</button></div>
+    <div id="sum"></div>
+    <form id="weigh" class="row" hidden><label for="wIn">Pesée du mois</label><input id="wIn" type="number" step="0.1" min="25" max="300" inputmode="decimal" required placeholder="kg"><button>OK</button></form>
     <button class="main" id="btConnect">Connecter le rameur</button>
+    <button id="btOther" hidden>Choisir un autre rameur</button>
     <button id="btDemo">Essayer sans rameur</button>
     <div class="err" id="err"></div>
     <small>Version __VERSION__. Chrome ou Edge (Android, PC, Mac), page servie en HTTPS. Sur iPhone, Safari ne gère pas le Bluetooth web : passe par le navigateur Bluefy. Monte le son.</small>
+    <small id="btHint" hidden>Pour ne plus choisir le rameur à chaque séance, active dans Chrome l'option chrome://flags/#enable-web-bluetooth-new-permissions-backend puis relance le navigateur.</small>
   </div>
 </div>
+
+<form class="intro" id="pf" hidden>
+  <div class="card">
+    <h2>Profil</h2>
+    <label>Prénom<input id="pfN" required maxlength="30" autocomplete="given-name"></label>
+    <label>Sexe<select id="pfS"><option value="f">Femme</option><option value="h">Homme</option></select></label>
+    <div class="row"><label style="flex:1">Taille (cm)<input id="pfH" type="number" min="100" max="230" required inputmode="numeric"></label>
+      <label style="flex:1">Poids (kg)<input id="pfW" type="number" min="25" max="300" step="0.1" required inputmode="decimal"></label></div>
+    <small>Ces données restent sur cet appareil. Le poids sert au calcul des calories.</small>
+    <button class="main">Enregistrer</button>
+    <div class="row"><button type="button" id="pfX">Annuler</button><button type="button" id="pfDel">Supprimer</button></div>
+    <div class="row"><button type="button" id="pfExp">Exporter</button><button type="button" id="pfImp">Importer</button></div>
+    <input type="file" id="pfFile" accept="application/json,.json" hidden>
+    <div class="err" id="pfErr"></div>
+  </div>
+</form>
 
 <script type="module">
 import * as THREE from 'three';
@@ -127,7 +168,17 @@ const SC=[
  width:14,curvy:1,bankW:4,bankH:.8,hill:14,mtn:160,sandH:.25,rockH:60,snowH:0,treeLine:200,spread:35,density:300,
  shore:'#3a3a3a',grass:['#2a3a2a','#1e2c20'],rock:'#4a4a52',ring:['#1c2546','#131b36'],ringH:170,
  leaf:['#1c2c22','#22342a'],trunk:'#2a2018',walls:['#8a7a6a','#6a5a50'],roof:'#2a2222',
- mix:[['pine',.6],['round',.3],['rock',.1]],village:.55,bridge:.25,pontoon:.3,boats:0,ducks:0,birds:0,fireflies:1,amb:['crickets','frogs','owl','wind:.2'],rev:2.6,revWet:.45}
+ mix:[['pine',.6],['round',.3],['rock',.1]],village:.55,bridge:.25,pontoon:.3,boats:0,ducks:0,birds:0,fireflies:1,amb:['crickets','frogs','owl','wind:.2'],rev:2.6,revWet:.45},
+{n:'Marais de la jungle',elev:50,az:205,turb:10,ray:1.4,mie:.012,mieG:.86,exp:.46,fog:'#a9b99c',fogFar:650,water:'#1f2a12',sunCol:'#fff1cc',sunI:2.2,hemi:['#d2e6c2','#3c4a22',1.25],
+ width:12,curvy:1.3,bankW:2,bankH:.35,hill:9,mtn:110,sandH:.12,rockH:140,snowH:0,treeLine:220,spread:20,density:440,
+ shore:'#4b4428',grass:['#3f6c28','#2c5220'],rock:'#5c5a48',ring:['#5d7a52','#48633f'],ringH:150,
+ leaf:['#2d6a2a','#3f7f32','#24582a','#4f8c34'],trunk:'#4a3b27',walls:['#8a6a43'],roof:'#5a4a2a',
+ mix:[['kapok',.32],['mangrove',.3],['palm',.16],['bush',.22]],lily:1,mist:1,village:0,bridge:0,pontoon:.25,boats:0,ducks:0,birds:1,amb:['cicadas:.7','frogs','birds:tropical','stream:.5','wind:.15'],rev:1.4,revWet:.32},
+{n:'Banquise arctique',elev:7,az:195,turb:1.5,ray:1.8,mie:.004,mieG:.86,exp:.5,fog:'#cbd6e2',fogFar:1500,water:'#0d2433',sunCol:'#ffe0c2',sunI:2.4,hemi:['#dce8f6','#9aa7b8',1.35],
+ width:30,curvy:.9,bankW:6,bankH:1.2,hill:16,mtn:280,sandH:.35,rockH:8,snowH:1,treeLine:400,spread:40,density:120,
+ shore:'#d6e1e8',grass:['#e6eef4','#cfdbe4'],rock:'#4f5661',snow:'#f5f9fc',ring:['#bccbdb','#a2b5c8'],ringH:420,
+ leaf:['#edf3f7','#dfe8ee'],trunk:'#5b4a3a',walls:['#c9302c'],roof:'#2a2a2a',
+ mix:[['rock',.55],['bush',.45]],ice:5,village:0,bridge:0,pontoon:0,boats:0,ducks:0,birds:1,amb:['wind:1.1','gulls:.5','ice'],rev:3.8,revWet:.5}
 ];
 let sIdx=0,S=SC[0],SEED=1;
 try{const v=+localStorage.getItem('balade-scene');if(v>=0&&v<SC.length)sIdx=v}catch(e){}
@@ -138,7 +189,8 @@ function vn(x,y){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf
   const a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v}
 function fbm(x,y){let s=0,a=.5,f=1;for(let i=0;i<4;i++){s+=a*vn(x*f,y*f);f*=2.03;a*=.5}return s/.9375}
 function ridge(x,y){let s=0,a=.5,f=1;for(let i=0;i<5;i++){const n=1-Math.abs(vn(x*f+i*17,y*f)*2-1);s+=a*n*n;f*=2.1;a*=.5}return s/.97}
-const center=s=>S.curvy*(45*Math.sin(s/520)+22*Math.sin(s/210+1.3)+7*Math.sin(s/95+.4));
+const bends=s=>.35+.65*sm(-.3,.5,Math.sin(s/1100+.7));
+const center=s=>S.curvy*(40*Math.sin(s/520)+bends(s)*(55*Math.sin(s/170+1.3)+14*Math.sin(s/75+.4)));
 const dcenter=s=>(center(s+1)-center(s-1))/2;
 const half=s=>S.width*(1+.3*Math.sin(s/430+2));
 function height(x,s){
@@ -222,6 +274,7 @@ const G=(g,o={})=>{if(o.s)g.scale(...o.s);if(o.rx)g.rotateX(o.rx);if(o.ry)g.rota
 const lam=new THREE.MeshLambertMaterial({flatShading:true});
 const glowMat=new THREE.MeshBasicMaterial();
 const fronds=[];for(let k=0;k<6;k++){const g=new THREE.BoxGeometry(3.4,.06,.7);g.translate(1.6,0,0);g.rotateZ(-.4);g.rotateY(k*Math.PI/3+.3);g.translate(1.15,7,0);fronds.push([g,'leaf'])}
+const roots=[];for(let k=0;k<4;k++){const g=new THREE.CylinderGeometry(.06,.1,2.6,4);g.rotateZ(.6);g.translate(.8,.9,0);g.rotateY(k*Math.PI/2+.4);roots.push([g,'trunk'])}
 const TYPES={
  pine:{cap:340,parts:[[G(new THREE.CylinderGeometry(.22,.32,2.2,5),{t:[0,1.1,0]}),'trunk'],[G(new THREE.ConeGeometry(2.3,4.2,7),{t:[0,3.6,0]}),'leaf'],[G(new THREE.ConeGeometry(1.8,3.6,7),{t:[0,5.4,0]}),'leaf'],[G(new THREE.ConeGeometry(1.2,2.8,7),{t:[0,7.1,0]}),'leaf']]},
  round:{cap:340,parts:[[G(new THREE.CylinderGeometry(.22,.34,3.2,5),{t:[0,1.6,0]}),'trunk'],[G(new THREE.IcosahedronGeometry(2.5,0),{s:[1,.85,1],t:[0,4.8,0]}),'leaf'],[G(new THREE.IcosahedronGeometry(1.7,0),{t:[.9,6,.4]}),'leaf']]},
@@ -230,6 +283,9 @@ const TYPES={
  bush:{cap:220,parts:[[G(new THREE.IcosahedronGeometry(1.2,0),{s:[1.3,.8,1.3],t:[0,.7,0]}),'leaf']]},
  lav:{cap:900,parts:[[G(new THREE.IcosahedronGeometry(.6,0),{s:[1,.65,1],t:[0,.35,0]}),'lav']]},
  rock:{cap:200,parts:[[G(new THREE.DodecahedronGeometry(1,0),{s:[1.3,.8,1.1],t:[0,.2,0]}),'rock']]},
+ kapok:{cap:300,parts:[[G(new THREE.CylinderGeometry(.35,.6,11,6),{t:[0,5.5,0]}),'trunk'],[G(new THREE.IcosahedronGeometry(4,0),{s:[1.6,.45,1.6],t:[0,11.6,0]}),'leaf'],[G(new THREE.IcosahedronGeometry(2.6,0),{s:[1.4,.5,1.4],t:[1.6,10,-1]}),'leaf']]},
+ mangrove:{cap:300,parts:[[G(new THREE.CylinderGeometry(.18,.24,3,5),{t:[0,3.4,0]}),'trunk'],...roots,[G(new THREE.IcosahedronGeometry(2.4,0),{s:[1.3,.7,1.3],t:[0,5.6,0]}),'leaf']]},
+ lily:{cap:300,parts:[[new THREE.CylinderGeometry(.7,.7,.04,9),'lily']]},
  house:{cap:30,parts:[[G(new THREE.BoxGeometry(6,4,5),{t:[0,2,0]}),'wall'],[G(new THREE.ConeGeometry(4.9,2.8,4),{s:[1,1,.85],ry:Math.PI/4,t:[0,5.4,0]}),'roof'],[G(new THREE.BoxGeometry(6.12,.9,1.4),{t:[0,2.3,0]}),'win',glowMat]]}
 };
 for(const t in TYPES)for(const p of TYPES[t].parts){const m=new THREE.InstancedMesh(p[0],p[2]||lam,TYPES[t].cap*NSLOT);m.frustumCulled=false;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -237,7 +293,7 @@ for(const t in TYPES)for(const p of TYPES[t].parts){const m=new THREE.InstancedM
 function roleColor(role,r){
   switch(role){case'trunk':return C.trunk;case'leaf':return tmpC.copy(C.leaf[Math.floor(r*C.leaf.length)]).multiplyScalar(.85+r*.3);
   case'lav':return tmpC.set(r<.5?'#7a58c2':'#8f6ad1');case'rock':return tmpC.copy(C.rock).multiplyScalar(.8+r*.4);
-  case'wall':return C.walls[Math.floor(r*C.walls.length)];case'roof':return C.roof;case'win':return tmpC.set(S.night?'#ffc860':'#39414b')}}
+  case'wall':return C.walls[Math.floor(r*C.walls.length)];case'roof':return C.roof;case'lily':return tmpC.set('#3d6b2c').multiplyScalar(.75+r*.5);case'win':return tmpC.set(S.night?'#ffc860':'#39414b')}}
 
 /* ================= objets : ponts, pontons, voiliers, canards ================= */
 const stoneMat=new THREE.MeshLambertMaterial({color:'#a59c8c',flatShading:true}),woodMat=new THREE.MeshLambertMaterial({color:'#6e4c30',flatShading:true});
@@ -268,6 +324,11 @@ function makeDucks(s,sd){const g=new THREE.Group(),n=3+Math.floor(Math.random()*
   anims.push({o:b,f:(t,dt)=>{for(const d of ds){d.position.y=.05+Math.sin(t*2+d.userData.ph)*.03}
     const dz=-b.position.z-st.s;if(dz<22&&dz>-5)b.userData.flee=Math.min(1,b.userData.flee+dt*.5);
     if(b.userData.flee>0){b.position.x+=sd*dt*1.4*b.userData.flee}}});return b}
+const iceMat=new THREE.MeshLambertMaterial({color:'#eef6fb',flatShading:true}),floeGeo=new THREE.CylinderGeometry(1,1,.6,7),bergGeo=new THREE.DodecahedronGeometry(1,0);
+function makeIce(s,sd){const g=new THREE.Group(),hs=half(s),n=4+Math.floor(Math.random()*6);
+  for(let i=0;i<n;i++)g.add(Mk(floeGeo,iceMat,rr(1.2,3.5),1,rr(1,2.6),sd*(4+Math.random()*Math.max(0,hs*.75-6)),.05,(Math.random()-.5)*30));
+  if(Math.random()<.5)g.add(Mk(bergGeo,iceMat,rr(4,8),rr(3,9),rr(4,8),sd*(hs*.8+4),-.5,0));
+  const b=place(g,s,center(s)),ph=Math.random()*6;anims.push({o:b,f:t=>{b.position.y=Math.sin(t*.7+ph)*.05}});return b}
 
 /* ================= tronçons ================= */
 const chunks=new Map();
@@ -282,7 +343,7 @@ function buildChunk(ci){
   const pick=()=>{let x=r(),a=0;for(const[t,p]of S.mix){a+=p;if(x<=a)return t}return S.mix[0][0]};
   const s0=ci*CH;
   for(let k=0;k<S.density;k++){const s=s0+r()*CH,sd=r()<.5?-1:1,d=half(s)+1+(-Math.log(1-r()*.999))*S.spread;if(d>LAT-60)continue;
-    const x=center(s)+sd*d,y=height(x,s);const t=pick();if((y<S.sandH+.1&&t!=='rock'&&t!=='palm')||y>S.treeLine)continue;push(t,x,y-.15,s,.7+r()*.7,r()*6.28)}
+    const x=center(s)+sd*d,y=height(x,s);const t=pick();if((y<S.sandH+.1&&!['rock','palm','mangrove'].includes(t))||y>S.treeLine)continue;push(t,x,y-.15,s,.7+r()*.7,r()*6.28)}
   for(let k=0;k<14;k++){const s=s0+r()*CH,sd=r()<.5?-1:1,x=center(s)+sd*(half(s)+(r()-.6)*2.2);push('rock',x,height(x,s)*.5-.3,s,.5+r()*.9,r()*6.28)}
   const objs=[];
   if(ci>0&&r()<S.village){const sv=s0+20+r()*(CH-40),sd=r()<.5?-1:1,n=3+Math.floor(r()*6);
@@ -293,6 +354,8 @@ function buildChunk(ci){
   if(ci>0&&r()<S.pontoon)objs.push(makePontoon(s0+r()*CH,r()<.5?-1:1));
   if(ci>0&&r()<S.boats&&half(s0)>13)objs.push(makeBoat(s0+r()*CH,r()<.5?-1:1));
   if(ci>0&&r()<S.ducks)objs.push(makeDucks(s0+r()*CH,r()<.5?-1:1));
+  if(S.lily)for(let k=0;k<70;k++){const s=s0+r()*CH,sd=r()<.5?-1:1;push('lily',center(s)+sd*half(s)*(.45+r()*.5),.05,s,.5+r()*.9,r()*6.28)}
+  for(let k=0;ci>0&&k<(S.ice||0);k++)objs.push(makeIce(s0+r()*CH,r()<.5?-1:1));
   for(const t in TYPES){const L=Pl[t],cap=TYPES[t].cap;for(const p of TYPES[t].parts){const m=p.mesh,role=p[1];
     for(let i=0;i<cap;i++){const id=slot*cap+i;if(i<L.length){m.setMatrixAt(id,L[i].m);m.setColorAt(id,roleColor(role,L[i].r))}else m.setMatrixAt(id,ZERO)}
     m.instanceMatrix.needsUpdate=true;m.instanceColor.needsUpdate=true}}
@@ -462,6 +525,10 @@ function amb(list){
     case'gulls':loop(t=>{const{d,k}=where(),n=2+Math.floor(R()*3);for(let j=0;j<n;j++){const tt=t+j*rr(.35,.5);const bp=filt('bandpass',1500,2.5);bp.connect(d);
       note(tt,rr(900,1100),rr(1400,1700),.12,.025*k*a,bp,0,0,'sawtooth');note(tt+.12,1500,rr(700,900),.3,.025*k*a,bp,15,9,'sawtooth')}},6,14);break;
     case'cowbells':loop(t=>{const{d,k}=where(),f0=rr(480,720),n=1+Math.floor(R()*4);for(let j=0;j<n;j++)bell(t+j*rr(.25,.7),f0,[1,2.76,5.4,8.93],.6,.009*k*a,d)},6,16);break;
+    case'ice':loop(t=>{const{d,k}=where();if(R()<.5){const o=c.createOscillator(),bp=filt('bandpass',rr(180,420),4),g=gn(0),L=rr(.4,1.1);o.type='sawtooth';
+        o.frequency.setValueAtTime(rr(30,60),t);o.frequency.linearRampToValueAtTime(rr(60,110),t+L);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.02*k*a,t+.08);g.gain.setTargetAtTime(0,t+L*.7,.08);
+        o.connect(bp).connect(g).connect(d);o.start(t);o.stop(t+L+.4)}
+      else noise({buf:A.white,type:'lowpass',f:3000,f2:300,Q:.7,vol:.05*k*a,att:.004,dur:.5,t,dest:d})},4,11);break;
     case'bell':loop(t=>{const d=pan(rr(-.6,.6),bus),n=3+Math.floor(R()*4);for(let j=0;j<n;j++)bell(t+j*2.2,rr(208,214),[.5,1,1.19,1.5,2,2.5,3],2.8,.012*a,d)},45,90);break;
     case'birds':{const kind=arg||'forest';
       const songs={
@@ -478,7 +545,7 @@ function amb(list){
 }
 
 /* ================= état & boucle ================= */
-const st={s:0,vT:0,vAvg:0,v:0,dist:0,mDist:null,mDist0:null,time:0,spm:0,phase:.5,strokes:null,power:null,kcal:null,hr:null,last:0,mode:null,samples:[],t:0,nextFish:5,nextBirds:8};
+const st={s:0,vT:0,vAvg:0,v:0,dist:0,mDist:null,mDist0:null,time:0,spm:0,phase:.5,strokes:null,power:null,kcal:null,kc:0,kg:79.5,hr:null,last:0,mode:null,samples:[],t:0,nextFish:5,nextBirds:8};
 let tour=true,nextSwitch=1500,pending=-1;
 const VIS=1.35;
 const look=new THREE.Vector3();
@@ -495,7 +562,8 @@ function frame(now){
   const pp=st.phase;
   if(st.spm>0){st.phase+=dt*st.spm/60;if(st.phase>=1){st.phase-=1;onCatch()}if(pp<.35&&st.phase>=.35)onRelease()}
   st.v=st.spm>0?st.vAvg*(1+.24*Math.cos(6.283*(st.phase-.24))):st.vAvg;
-  st.s+=st.v*dt*VIS;st.dist+=st.vAvg*dt;if(st.vAvg>.3)st.time+=dt;
+  st.s+=st.v*dt*VIS/Math.hypot(1,dcenter(st.s));st.dist+=st.vAvg*dt;
+  if(st.vAvg>.3){st.time+=dt;st.kc+=(3.44*(st.power??2.8*st.vAvg**3)+3.78*st.kg)*dt/3600}
   // caméra
   const cx=center(st.s),bob=st.spm>0?Math.sin(st.phase*6.283)*.025:Math.sin(st.t*.9)*.01;
   camera.position.set(cx,1.15+bob,-st.s);
@@ -537,9 +605,83 @@ function hud(){
   $('hTime').textContent=fmtT(st.time);$('hSpm').textContent=Math.round(st.spm);
   $('hPace').textContent=st.vAvg>.3?fmtT(500/st.vAvg):'--:--';
   if(st.power!=null){$('sPow').classList.remove('hide');$('hPow').textContent=st.power}
-  if(st.kcal!=null){$('sKcal').classList.remove('hide');$('hKcal').textContent=st.kcal}
+  $('hKcal').textContent=kcalNow();
   if(st.hr){$('sHr').classList.remove('hide');$('hHr').textContent=st.hr}
+  progTick();
 }
+const kcalNow=()=>me()||st.kcal==null?Math.round(st.kc):st.kcal;
+
+/* ================= séances guidées ================= */
+const W=(d,n,a,b)=>({d,n,a,b}),rep=(k,...x)=>Array.from({length:k},()=>x).flat(),CALM=W(180,'Retour au calme',16,20);
+const PROG=[
+ {n:'Réveil',seg:[W(180,'Échauffement',18,20),...rep(2,W(60,'Accélère',24,26),W(60,'Récup',20,22)),CALM]},
+ {n:'Endurance',seg:[W(240,'Échauffement',18,20),W(780,'Endurance',20,22),CALM]},
+ {n:'Fractionné 30/30',seg:[W(300,'Échauffement',18,22),...rep(10,W(30,'Vite',26,30),W(30,'Facile',18,20)),W(300,'Retour au calme',16,20)]},
+ {n:'Pyramide',seg:[W(300,'Échauffement',18,22),...[1,2,3,2,1].flatMap(m=>[W(m*60,'Effort',24,28),W(m*60,'Récup',18,20)]),W(240,'Retour au calme',16,20)]},
+ {n:'4 × 4 min',seg:[W(360,'Échauffement',18,22),...rep(4,W(240,'Intense',26,30),W(180,'Récup',18,20)).slice(0,-1),W(300,'Retour au calme',16,20)]},
+ {n:'Tabata',seg:[W(300,'Échauffement',18,22),...rep(8,W(20,'À fond',30,36),W(10,'Repos',0,20)),W(300,'Retour au calme',16,20)]}
+];
+for(const p of PROG)p.dur=p.seg.reduce((a,g)=>a+g.d,0);
+const pg={p:null,t0:0,i:-1,c:0};
+function beep(long){if(!A.ctx||!A.on)return;const f=long?1320:880;note(A.ctx.currentTime,f,f,long?.35:.12,.035,A.master)}
+function startProg(i){pg.p=PROG[i]||null;pg.t0=st.time;pg.i=-1;$('pg').hidden=!pg.p;$('hSpm').parentNode.className='st';if(pg.p&&ses)ses.p=pg.p.n;progTick()}
+function progTick(){if(!pg.p)return;const L=pg.p.seg,e=st.time-pg.t0;let i=0,a=0;while(i<L.length&&e>=a+L[i].d)a+=L[i++].d;
+  if(i>=L.length){startProg(-1);$('prog').value=-1;toast('Séance terminée');beep(1);saveSes();return}
+  const g=L[i],left=a+g.d-e,c=Math.ceil(left),nx=L[i+1];
+  if(i!==pg.i){pg.i=i;pg.c=0;toast(g.n);beep(1)}else if(c<=3&&c!==pg.c){pg.c=c;beep(0)}
+  const k=st.spm<g.a?'lo':st.spm>g.b?'hi':'ok';
+  $('pgN').textContent=g.n;$('pgL').textContent=fmtT(left);
+  $('pgT').textContent=`cible ${g.a?g.a+'–':'≤ '}${g.b} coups/min`+(k==='lo'?' · accélère':k==='hi'?' · ralentis':'');$('pgT').className=k;
+  $('hSpm').parentNode.className='st '+k;
+  $('pgBar').style.width=(e/pg.p.dur*100).toFixed(1)+'%';
+  $('pgNx').textContent=nx?`Ensuite : ${nx.n} ${fmtT(nx.d)}`:'Dernière ligne droite'}
+
+/* ================= profils ================= */
+const DB=(()=>{try{const d=JSON.parse(localStorage.getItem('balade-users'));if(validDB(d))return d}catch(e){}return{cur:null,users:[]}})();
+function validDB(d){const n=x=>typeof x==='number'&&isFinite(x);return Array.isArray(d?.users)&&d.users.every(u=>typeof u.id==='string'&&typeof u.name==='string'&&n(u.h)&&
+  Array.isArray(u.w)&&u.w.length&&u.w.every(x=>typeof x[0]==='string'&&n(x[1]))&&Array.isArray(u.ses)&&u.ses.every(x=>typeof x.d==='string'&&n(x.dur)&&n(x.dist)&&n(x.kcal)))}
+const saveDB=()=>{try{localStorage.setItem('balade-users',JSON.stringify(DB))}catch(e){}};
+const me=()=>DB.users.find(u=>u.id===DB.cur)||null;
+const num=(v,d=1)=>v.toLocaleString('fr-FR',{maximumFractionDigits:d});
+const day=d=>new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+const ym=d=>{d=new Date(d);return d.getFullYear()*12+d.getMonth()};
+function weighIn(u,kg){const now=new Date().toISOString(),l=u.w.at(-1);if(l&&new Date(l[0]).toDateString()===new Date(now).toDateString())l[1]=kg;else u.w.push([now,kg])}
+function profUI(){const u=me();
+  $('who').replaceChildren(new Option('Sans profil',''),...DB.users.map(x=>new Option(x.name,x.id,false,x.id===DB.cur)),new Option('+ Nouveau profil','new'));
+  $('who').value=u?u.id:'';$('whoEdit').hidden=!u;
+  const lines=[];
+  if(u){const L=u.ses.filter(x=>ym(x.d)===ym(Date.now())),km=L.reduce((a,x)=>a+x.dist,0)/1000,kc=L.reduce((a,x)=>a+x.kcal,0),g=kc/7.7;
+    lines.push(L.length?`Ce mois-ci : ${L.length} séance${L.length>1?'s':''}, ${num(km)} km, ${num(kc,0)} kcal, soit environ ${g<1000?num(g,0)+' g':num(g/1000)+' kg'} de graisse.`:'Pas encore de séance ce mois-ci.');
+    const w0=u.w[0],w1=u.w.at(-1),dw=w1[1]-w0[1];
+    lines.push(`Poids : ${num(w1[1])} kg`+(Math.abs(dw)>=.1?`, ${num(Math.abs(dw))} kg de ${dw<0?'moins':'plus'} que le ${day(w0[0])}.`:'.')+` IMC ${num(w1[1]/(u.h/100)**2)}.`);
+    $('weigh').hidden=ym(w1[0])===ym(Date.now())}
+  else $('weigh').hidden=true;
+  $('sum').replaceChildren(...lines.map(t=>Object.assign(document.createElement('div'),{textContent:t})))}
+let delArm=false;
+function openProf(u){delArm=false;$('pfDel').textContent='Supprimer';$('pfDel').hidden=!u;$('pfErr').textContent='';
+  $('pfN').value=u?.name||'';$('pfS').value=u?.sex||'f';$('pfH').value=u?.h||'';$('pfW').value=u?.w.at(-1)[1]||'';$('pf').dataset.id=u?.id||'';$('pf').hidden=false;$('pfN').focus()}
+$('who').addEventListener('change',e=>{if(e.target.value==='new'){openProf(null);return}DB.cur=e.target.value||null;saveDB();profUI()});
+$('whoEdit').addEventListener('click',()=>openProf(me()));
+$('pfX').addEventListener('click',()=>{$('pf').hidden=true;profUI()});
+$('pf').addEventListener('submit',e=>{e.preventDefault();const id=$('pf').dataset.id,kg=+$('pfW').value;
+  let u=DB.users.find(x=>x.id===id);if(!u){u={id:'u'+Date.now(),w:[],ses:[]};DB.users.push(u)}
+  Object.assign(u,{name:$('pfN').value.trim(),sex:$('pfS').value,h:+$('pfH').value});if(u.w.at(-1)?.[1]!==kg)weighIn(u,kg);
+  DB.cur=u.id;saveDB();$('pf').hidden=true;profUI()});
+$('pfDel').addEventListener('click',e=>{if(!delArm){delArm=true;e.target.textContent='Confirmer la suppression';return}
+  DB.users=DB.users.filter(x=>x.id!==$('pf').dataset.id);DB.cur=null;saveDB();$('pf').hidden=true;profUI()});
+$('weigh').addEventListener('submit',e=>{e.preventDefault();const u=me();if(!u)return;weighIn(u,+$('wIn').value);saveDB();profUI()});
+$('pfExp').addEventListener('click',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,1)],{type:'application/json'}));
+  a.download='balade-profils.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)});
+$('pfImp').addEventListener('click',()=>$('pfFile').click());
+$('pfFile').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const d=JSON.parse(await f.text());if(!validDB(d))throw 0;for(const u of d.users){const i=DB.users.findIndex(x=>x.id===u.id);i>=0?DB.users[i]=u:DB.users.push(u)}
+    if(!me())DB.cur=d.users[0]?.id||null;saveDB();$('pf').hidden=true;profUI()}
+  catch(_){$('pfErr').textContent="Ce fichier n'est pas un export de Balade à la rame."}});
+let ses=null,sesU=null;
+function saveSes(){if(!ses||!sesU||st.time<60)return;Object.assign(ses,{dur:Math.round(st.time),dist:Math.round(shownDist()),kcal:Math.round(st.kc)});
+  if(!sesU.ses.includes(ses))sesU.ses.push(ses);saveDB()}
+setInterval(saveSes,15000);addEventListener('pagehide',saveSes);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveSes()});
 let tt;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),2600)}
 
 /* ================= Bluetooth FTMS ================= */
@@ -567,13 +709,26 @@ function onRower(e){const r=parseRower(e.target.value),now=performance.now();st.
   if(!v&&st.power>0)v=Math.cbrt(st.power/2.8);
   if(!v&&st.spm>0)v=st.spm*.15;
   if(v!=null)st.vT=clamp(v,0,7)}
-async function connect(){
+let known=null;
+if(navigator.bluetooth&&!navigator.bluetooth.getDevices)$('btHint').hidden=false;
+navigator.bluetooth?.getDevices?.().then(L=>{let id=null;try{id=localStorage.getItem('balade-dev')}catch(e){}
+  known=L.find(d=>d.id===id)||L[0]||null;if(known){$('btConnect').textContent='Reconnecter '+(known.name||'le rameur');$('btOther').hidden=false}}).catch(()=>{});
+// un appareil retrouvé par getDevices() doit avoir été vu en publicité avant gatt.connect()
+function inRange(d){if(!d.watchAdvertisements)return Promise.resolve();const ac=new AbortController();
+  return new Promise((ok,ko)=>{const t=setTimeout(()=>{ac.abort();ko(new Error('rameur introuvable. Réveille-le puis réessaie, ou choisis-en un autre.'))},20000);
+    d.addEventListener('advertisementreceived',()=>{clearTimeout(t);ac.abort();ok()},{once:true});
+    d.watchAdvertisements({signal:ac.signal}).catch(()=>{clearTimeout(t);ok()})})}
+async function connect(pick){
   $('err').textContent='';fallback();audioInit();
   if(!navigator.bluetooth){$('err').textContent='Ce navigateur ne gère pas le Bluetooth web. Ouvre la page dans Chrome ou Edge, en HTTPS.';return}
-  try{dev=await navigator.bluetooth.requestDevice({filters:[{services:[FTMS]},{namePrefix:'MERACH'},{namePrefix:'Merach'},{namePrefix:'MRK'}],optionalServices:[FTMS]});
-    dev.addEventListener('gattserverdisconnected',()=>{setStatus(false,'Déconnecté, reconnexion…');setTimeout(()=>link().catch(()=>{}),1500)});
-    await link();start('bt')}
-  catch(e){$('err').textContent=e.name==='NotFoundError'?'Aucun rameur choisi.':'Connexion impossible : '+e.message}}
+  const b=$('btConnect');b.disabled=true;
+  try{if(known&&!pick){dev=known;$('err').textContent='Recherche du rameur : donne un coup de rame pour le réveiller.';await inRange(dev)}
+    else{dev=await navigator.bluetooth.requestDevice({filters:[{services:[FTMS]},{namePrefix:'MERACH'},{namePrefix:'Merach'},{namePrefix:'MRK'}],optionalServices:[FTMS]});
+      try{localStorage.setItem('balade-dev',dev.id)}catch(e){}}
+    if(!dev.watched){dev.watched=1;dev.addEventListener('gattserverdisconnected',()=>{setStatus(false,'Déconnecté, reconnexion…');setTimeout(()=>link().catch(()=>{}),1500)})}
+    await link();$('err').textContent='';start('bt')}
+  catch(e){$('err').textContent=e.name==='NotFoundError'?'Aucun rameur choisi.':'Connexion impossible : '+e.message}
+  finally{b.disabled=false}}
 async function link(){if(!dev)return;setStatus(false,'Connexion…');const srv=await dev.gatt.connect();let svc;
   try{svc=await srv.getPrimaryService(FTMS)}catch(e){setStatus(false,'Ce rameur ne parle pas FTMS');throw new Error("le rameur n'expose pas le service FTMS")}
   const ch=await svc.getCharacteristic(ROWER);ch.addEventListener('characteristicvaluechanged',onRower);await ch.startNotifications();
@@ -600,19 +755,24 @@ setInterval(()=>{if(st.mode&&document.visibilityState==='visible')wake()},20000)
 
 /* ================= démarrage ================= */
 function start(mode){st.mode=mode;$('intro').style.display='none';$('wk').style.display='inline-block';wake();poke();
+  sesU=me();st.kg=sesU?.w.at(-1)[1]||79.5;if(sesU)ses={d:new Date().toISOString(),dur:0,dist:0,kcal:0,p:pg.p?.n||null};
   if(mode==='demo'){$('demoBox').style.display='flex';setStatus(true,'Mode démo')}toast(S.n)}
 SC.forEach((s,i)=>$('scene').insertAdjacentHTML('beforeend',`<option value="${i}">${s.n}</option>`));
+PROG.forEach((p,i)=>$('prog').add(new Option(`${p.n} · ${Math.round(p.dur/60)} min`,i)));
+$('prog').addEventListener('change',e=>startProg(+e.target.value));
+profUI();
 $('scene').addEventListener('change',e=>{const v=+e.target.value;try{localStorage.setItem('balade-scene',v)}catch(_){}go(v)});
 $('tour').addEventListener('click',e=>{tour=!tour;e.currentTarget.classList.toggle('on',tour);nextSwitch=shownDist()+1500});
 $('snd').addEventListener('click',e=>{A.on=!A.on;e.currentTarget.classList.toggle('on',A.on);audioInit();A.ctx?.resume();if(A.master)A.master.gain.setTargetAtTime(A.on?4:0,A.ctx.currentTime,.1)});
 $('fs').addEventListener('click',()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}});
-$('btConnect').addEventListener('click',connect);
+$('btConnect').addEventListener('click',()=>connect(false));
+$('btOther').addEventListener('click',()=>connect(true));
 $('btDemo').addEventListener('click',()=>{fallback();audioInit();start('demo')});
 $('wk').addEventListener('click',wake);
 $('demoSpm').addEventListener('input',e=>$('demoVal').textContent=e.target.value);
 addEventListener('resize',resize);
 resize();applyScene(sIdx);$('fade').style.opacity=0;
-window.__balade={st,go,SC,A};
+window.__balade={st,go,SC,A,PROG,pg,DB,center,dcenter};
 requestAnimationFrame(frame);
 }
 </script>
